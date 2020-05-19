@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}BinDay{% endblock %}
+
+{% block app_content %}
+<table class="table">
+    <caption>My bins</caption>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Bin</th>
+            <th>Volume</th>
+            <th>Collection on</th>
+            <th>Actions</th>
+        <tr>
+    </thead>
+    <tbody>
+        {% for my_bin in my_bins %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>
+                <div class="bin-color-box" style="background-color: {{ my_bin.color_hex }};"></div>
+                {{ my_bin.name }} (ID: {{ my_bin.id }})
+            </td>
+            <td>{{ bin_sensor_data[my_bin.id].level }}</td>
+            <td>{{ my_bin.bin_day.day_index.value }} ({{ my_bin.bin_day.frequency.value }})</td>
+            <td>
+                <a href="bins/{{ my_bin.id }}" class="btn btn-info btn-sm" role="button">View</a>
+                <a href="bins/{{ my_bin.id }}/edit" class="btn btn-secondary btn-sm" role="button">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br />
+<a href="bins/create" class="btn btn-primary" role="button">Add a bin</a>
+
+{% endblock %}
