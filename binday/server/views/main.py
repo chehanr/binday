@@ -58,15 +58,14 @@ def index():
             binx = BinX(my_bin_obj.name, my_bin_obj.sonar_id, my_bin_obj.led_id)
             bin_actions = BinActions(board, binx)
 
+            sonar_reading = bin_actions.get_bin_sonar()
+            led_status = bin_actions.get_bin_led_status()
+
             bin_sensor_data[my_bin_obj.id] = {
-                "sonar_reading": bin_actions.get_bin_sonar(),
-                "bin_level": get_bin_level(
-                    my_bin_obj.height, bin_actions.get_bin_sonar()
-                ),
-                "bin_level_perc": get_bin_level_perc(
-                    my_bin_obj.height, bin_actions.get_bin_sonar()
-                ),
-                "led_status": bin_actions.get_bin_led_status(),
+                "sonar_reading": sonar_reading,
+                "bin_level": get_bin_level(my_bin_obj.height, sonar_reading),
+                "bin_level_perc": get_bin_level_perc(my_bin_obj.height, sonar_reading),
+                "led_status": led_status,
             }
 
     return render_template(
