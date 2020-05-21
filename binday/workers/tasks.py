@@ -1,37 +1,20 @@
-from flask import (
-    Blueprint,
-    flash,
-    redirect,
-    render_template,
-    request,
-    stream_with_context,
-    url_for,
-)
-from flask_login import current_user, login_user, logout_user
-
 from binday.binx.binx import BinActions, BinX
 from binday.boards.board import Board, BoardType
 from binday.boards.uno_r3 import UnoR3
-from binday.server.factories.application import db
-from binday.server.models.bin_day import BinDay
+from binday.server.factories.application import create_application
 from binday.server.models.my_bin import MyBin
 from binday.utils.bin_utils import get_bin_level, get_bin_level_perc
 
-blueprint = Blueprint("main", __name__)
 
+def add_bin_reading_task():
+    app = create_application()
 
-@blueprint.route("/", methods=["GET"])
-def index():
-    if not current_user.is_authenticated:
-        return redirect(url_for("auth.login"))
-
-    my_bin_objs = (
-        MyBin.query.filter(MyBin.creator.has(id=current_user.id))
-        .order_by("device_name")
-        .all()
-    )
-
+    my_bin_objs = []
     bin_sensor_data = {}
+
+    with app.app_context():
+        my_bin_objs = MyBin.query.order_by("device_name").all()
+
     prev_board = None
 
     for my_bin_obj in my_bin_objs:
@@ -44,8 +27,8 @@ def index():
             if prev_board != board:
                 board.setup()
         except Exception as ex:
-            flash(f"Bin {my_bin_obj.id} ({my_bin_obj.name}): {ex}", "warning")
-
+            # TODO Better logging.
+            print(ex)
             bin_sensor_data[my_bin_obj.id] = {
                 "sonar_reading": None,
                 "bin_level": None,
@@ -68,6 +51,5 @@ def index():
                 "led_status": led_status,
             }
 
-    return render_template(
-        "index.html", my_bins=my_bin_objs, bin_sensor_data=bin_sensor_data
-    )
+    # TODO Add a bin reading record.
+    print(bin_sensor_data)

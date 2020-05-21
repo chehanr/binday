@@ -9,7 +9,8 @@
         <tr>
             <th>#</th>
             <th>Bin</th>
-            <th>Volume</th>
+            <th>Level (cm)</th>
+            <th>Volume (%)</th>
             <th>Collection on</th>
             <th>Actions</th>
         <tr>
@@ -22,7 +23,8 @@
                 <div class="bin-color-box" style="background-color: {{ my_bin.color_hex }};"></div>
                 {{ my_bin.name }} (ID: {{ my_bin.id }})
             </td>
-            <td>{{ bin_sensor_data[my_bin.id].level }}</td>
+            <td>{{ bin_sensor_data[my_bin.id].bin_level }}</td>
+            <td>{{ bin_sensor_data[my_bin.id].bin_level_perc }}</td>
             <td>{{ my_bin.bin_day.day_index.value }} ({{ my_bin.bin_day.frequency.value }})</td>
             <td>
                 <a href="bins/{{ my_bin.id }}" class="btn btn-info btn-sm" role="button">View</a>
