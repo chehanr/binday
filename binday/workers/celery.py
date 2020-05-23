@@ -3,7 +3,7 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
-from binday.workers.tasks import add_bin_reading_task
+from binday.workers.tasks import add_bin_reading_task, turn_on_led_task
 
 worker = Celery(
     "worker",
@@ -18,8 +18,14 @@ def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(
         crontab(minute="*"), add_bin_reading, name="Add bin reading task"
     )
+    sender.add_periodic_task(crontab(minute="*"), turn_on_led, name="Turn on LED task")
 
 
 @worker.task
 def add_bin_reading():
     add_bin_reading_task()
+
+
+@worker.task
+def turn_on_led():
+    turn_on_led_task()
