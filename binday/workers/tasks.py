@@ -1,7 +1,8 @@
 from binday.binx.binx import BinActions, BinX
 from binday.boards.board import Board, BoardType
 from binday.boards.uno_r3 import UnoR3
-from binday.server.factories.application import create_application
+from binday.server.factories.application import create_application, db
+from binday.server.models.bin_reading import BinReading
 from binday.server.models.my_bin import MyBin
 from binday.utils.bin_utils import get_bin_level, get_bin_level_perc
 
@@ -29,12 +30,6 @@ def add_bin_reading_task():
         except Exception as ex:
             # TODO Better logging.
             print(ex)
-            bin_sensor_data[my_bin_obj.id] = {
-                "sonar_reading": None,
-                "bin_level": None,
-                "bin_level_perc": None,
-                "led_status": None,
-            }
         else:
             prev_board = board
 
@@ -46,10 +41,18 @@ def add_bin_reading_task():
 
             bin_sensor_data[my_bin_obj.id] = {
                 "sonar_reading": sonar_reading,
-                "bin_level": get_bin_level(my_bin_obj.height, sonar_reading),
-                "bin_level_perc": get_bin_level_perc(my_bin_obj.height, sonar_reading),
                 "led_status": led_status,
             }
 
-    # TODO Add a bin reading record.
-    print(bin_sensor_data)
+    for k, v in bin_sensor_data.items():
+        bin_reading_obj = BinReading(
+            sonar_reading=v.get("sonar_reading"),
+            led_status=v.get("led_status"),
+            my_bin_id=k,
+        )
+
+        with app.app_context():
+            db.session.add(bin_reading_obj)
+            db.session.commit()
+
+            print(f"Added a new sensor record: {bin_reading_obj}")

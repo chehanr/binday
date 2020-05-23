@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block title %}{{ my_bin.name }} (ID: {{ my_bin.id }}){% endblock %}
+
+{% block head %}
+{{super()}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"
+    integrity="sha256-eVNjHw5UeU0jUqPPpZHAkU1z4U+QFBBY488WvueTm88=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+{% endblock %}
+
+{% block app_content %}
+<h1>
+    <div class="bin-color-box" style="background-color: {{ my_bin.color_hex }};"></div>
+    {{ my_bin.name }} (ID: {{ my_bin.id }})
+</h1>
+{% if my_bin.description %}
+<p>{{ my_bin.description }}</p>
+{% endif %}
+<p>Bin capacity: {{ my_bin.capacity }} &#x33A4; | height: {{ my_bin.height }} cm</p>
+<p>Bin level (now): {{ bin_sensor_data.bin_level }} cm ({{ bin_sensor_data.bin_level_perc }} %)</p>
+<p>Collection on: {{ my_bin.bin_day.day_index.value }} ({{ my_bin.bin_day.frequency.value }})</p>
+<h2>Historical data</h2>
+<canvas id="chart-historical-canvas" width="400" height="150"></canvas>
+<h2>Predicted data</h2>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+
+<script>
+    const chartHistoricalCanvas = document.getElementById("chart-historical-canvas").getContext("2d");
+    
+    // Python object -> Js object
+    const readingData = [
+        {% for key, val in bin_reading_data.items() %}
+            {
+                Id: "{{ key }}", 
+                sonarReading: {{ val.sonar_reading }}, 
+                binLevel: {{ val.bin_level }}, 
+                binLevelPerc: {{ val.bin_level_perc }}, 
+                ledStatus: {{ val.led_status }}, 
+                dateCreated: {{ val.date_created }}, 
+            }
+            {% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    let chartHistorical = new Chart(chartHistoricalCanvas, {
+        type: "line",
+        data: {
+            labels: readingData.map(obj => Date(obj.dateCreated)),
+            datasets: [{
+                label: "% Garbage level",
+                data: readingData.map(obj => obj.binLevelPerc),
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            labels: {
+                display: false,
+            },
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        display: false
+                    },
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    },
+                }]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function (tooltipItem) {
+                        return tooltipItem.yLabel;
+                    },
+                }
+            },
+            plugins: {
+                zoom: {
+                    pan: {
+                        enabled: false,
+                        mode: "xy",
+                    },
+                    zoom: {
+                        enabled: true,
+                        mode: "xy",
+                    }
+                }
+            },
+        }
+    });
+</script>
+{% endblock %}
