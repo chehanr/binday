@@ -1,5 +1,5 @@
 import os
-
+import pymysql
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
@@ -29,12 +29,24 @@ def create_application():
         template_folder=TEMPLATE_DIR,
     )
 
+    # Local Database
+    # app.config.from_mapping(
+    #     SECRET_KEY=os.getenv("SECRET_KEY", "key"),
+    #     TEMPLATES_AUTO_RELOAD=True,
+    #     SQLALCHEMY_TRACK_MODIFICATIONS=True,
+    #     SQLALCHEMY_DATABASE_URI=os.getenv(
+    #         "SQLALCHEMY_DATABASE_URI", f"sqlite:///{LOCAL_SQLITE_DB_PATH}"
+    #     ),
+    # )
+
+    #Remote Database
+    remote_db_ip="192.168.1.20"
     app.config.from_mapping(
         SECRET_KEY=os.getenv("SECRET_KEY", "key"),
         TEMPLATES_AUTO_RELOAD=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=True,
         SQLALCHEMY_DATABASE_URI=os.getenv(
-            "SQLALCHEMY_DATABASE_URI", f"sqlite:///{LOCAL_SQLITE_DB_PATH}"
+            "SQLALCHEMY_DATABASE_URI", f"mysql+pymysql://assignment:assignment3@" + remote_db_ip + "/binday"
         ),
     )
 

@@ -10,6 +10,7 @@ WORKDIR /usr/src/app
 
 # install dependencies
 RUN apk add --no-cache gcc libffi-dev musl-dev openssl-dev
+RUN python3 -m pip install PyMySQL 
 RUN pip install --upgrade pip
 RUN pip install "poetry==$POETRY_VERSION"
 
