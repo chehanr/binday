@@ -19,6 +19,7 @@ WTForms-Components = "^0.10.4"
 colour = "^0.1.5"
 celery = "^4.4.2"
 redis = "^3.5.2"
+"pushbullet.py" = "^0.11.0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
