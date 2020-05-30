@@ -29,13 +29,18 @@ def create_application():
         template_folder=TEMPLATE_DIR,
     )
 
+    # Set SQLite db by default.
+    db_uri = os.getenv("DATABASE_URI", LOCAL_SQLITE_DB_PATH)
+    sqlalch_db_uri = f"sqlite:///{db_uri}"
+
+    if os.getenv("DATABASE_TYPE") == "MARIADB":
+        sqlalch_db_uri = f"mysql+pymysql:///{db_uri}"
+
     app.config.from_mapping(
         SECRET_KEY=os.getenv("SECRET_KEY", "key"),
         TEMPLATES_AUTO_RELOAD=True,
         SQLALCHEMY_TRACK_MODIFICATIONS=True,
-        SQLALCHEMY_DATABASE_URI=os.getenv(
-            "SQLALCHEMY_DATABASE_URI", f"sqlite:///{LOCAL_SQLITE_DB_PATH}"
-        ),
+        SQLALCHEMY_DATABASE_URI=sqlalch_db_uri,
     )
 
     # Import models.
