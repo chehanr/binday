@@ -13,8 +13,10 @@ from binday.binx.binx import BinActions, BinX
 from binday.boards.board import Board, BoardType
 from binday.boards.uno_r3 import UnoR3
 from binday.server.factories.application import db
+from binday.server.forms.main import UserConfigForm
 from binday.server.models.bin_day import BinDay
 from binday.server.models.my_bin import MyBin
+from binday.server.models.user_config import UserConfig
 from binday.utils.bin_utils import get_bin_level, get_bin_level_perc
 
 blueprint = Blueprint("main", __name__)
@@ -71,3 +73,32 @@ def index():
     return render_template(
         "index.html", my_bins=my_bin_objs, bin_sensor_data=bin_sensor_data
     )
+
+
+@blueprint.route("/user/settings", methods=["GET", "POST"])
+def user_config():
+    if not current_user.is_authenticated:
+        return redirect(url_for("auth.login"))
+
+    user_cofig_obj = UserConfig.query.filter(
+        UserConfig.user.has(id=current_user.id)
+    ).first()
+
+    form = UserConfigForm(obj=user_cofig_obj)
+
+    if form.validate_on_submit():
+        if user_cofig_obj:
+            user_cofig_obj.pushbullet_api_key = form.pushbullet_api_key.data
+            db.session.merge(user_cofig_obj)
+        else:
+            new_user_config = UserConfig(user=current_user)
+            new_user_config.pushbullet_api_key = form.pushbullet_api_key.data
+            db.session.add(new_user_config)
+
+        db.session.commit()
+
+        flash(f"User settings updated!", "success")
+
+        return redirect(url_for("main.index"))
+
+    return render_template("user_config.html", form=form)
