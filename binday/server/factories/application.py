@@ -48,6 +48,7 @@ def create_application():
     from binday.server.models.my_bin import MyBin
     from binday.server.models.bin_day import BinDay
     from binday.server.models.bin_reading import BinReading
+    from binday.server.models.user_config import UserConfig
 
     db.init_app(app)
     migrate.init_app(app, db)
