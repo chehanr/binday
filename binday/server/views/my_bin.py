@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from statistics import StatisticsError
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user
@@ -11,8 +12,13 @@ from binday.server.forms.my_bin import CreateMyBinForm, EditMyBinForm
 from binday.server.models.bin_day import BinDay
 from binday.server.models.bin_reading import BinReading
 from binday.server.models.my_bin import MyBin
-from binday.utils.bin_utils import get_bin_level, get_bin_level_perc
+from binday.utils.bin_utils import (
+    get_bin_level,
+    get_bin_level_perc,
+    group_by_date_created,
+)
 from binday.utils.common_utils import get_millis_time
+from binday.utils.stat_utils import calc_mean, calc_stdev, calc_variance
 
 blueprint = Blueprint("my_bin", __name__)
 
@@ -66,6 +72,34 @@ def view(bin_id):
             "date_created": get_millis_time(bin_reading_obj.date_created),
         }
 
+    bin_statis_data = {}
+
+    for date, data in group_by_date_created(bin_reading_objs).items():
+        bin_levels = list(
+            map(lambda x: get_bin_level_perc(x.my_bin.height, x.sonar_reading), data)
+        )
+
+        try:
+            mean_val = calc_mean(bin_levels)
+        except StatisticsError as ex:
+            mean_val = 0.0
+
+        try:
+            stdev_val = calc_stdev(bin_levels)
+        except StatisticsError as ex:
+            stdev_val = 0.0
+
+        try:
+            variance_val = calc_variance(bin_levels)
+        except StatisticsError as ex:
+            variance_val = 0.0
+
+        bin_statis_data[date] = {
+            "mean": mean_val,
+            "stdev": stdev_val,
+            "variance": variance_val,
+        }
+
     try:
         board = Board(device_name=my_bin_obj.device_name)
 
@@ -100,6 +134,7 @@ def view(bin_id):
         "/my_bin/view.html",
         my_bin=my_bin_obj,
         bin_reading_data=bin_reading_data,
+        bin_statis_data=bin_statis_data,
         bin_sensor_data=bin_sensor_data,
         from_date=from_date,
         to_date=to_date,

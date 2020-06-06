@@ -24,7 +24,8 @@
 <p>Collection on: {{ my_bin.bin_day.day_index.value }} ({{ my_bin.bin_day.frequency.value }})</p>
 <h2>Historical data</h2>
 <canvas id="chart-historical-canvas" width="400" height="150"></canvas>
-<h2>Predicted data</h2>
+<h2>Statistical data (daily)</h2>
+<canvas id="chart-statistical-canvas" width="400" height="150"></canvas>
 {% endblock %}
 
 {% block scripts %}
@@ -32,6 +33,7 @@
 
 <script>
     const chartHistoricalCanvas = document.getElementById("chart-historical-canvas").getContext("2d");
+    const chartStaticticalCanvas = document.getElementById("chart-statistical-canvas").getContext("2d");
     
     // Python object -> Js object
     const readingData = [
@@ -42,7 +44,19 @@
                 binLevel: {{ val.bin_level }}, 
                 binLevelPerc: {{ val.bin_level_perc }}, 
                 ledStatus: {{ val.led_status }}, 
-                dateCreated: {{ val.date_created }}, 
+                dateCreated: {{ val.date_created }}
+            }
+            {% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const statisData = [
+        {% for key, val in bin_statis_data.items() %}
+            {
+                date: "{{ key }}", 
+                mean: {{ val.mean }}, 
+                stdev: {{ val.stdev }}, 
+                variance: {{ val.variance }} 
             }
             {% if not loop.last %},{% endif %}
         {% endfor %}
@@ -93,6 +107,68 @@
                     }
                 }
             },
+        }
+    });
+
+    let chartStatictical = new Chart(chartStaticticalCanvas, {
+        type: "line",
+        data: {
+            labels: statisData.map(obj => Date(obj.date)),
+            datasets: [{
+                label: "Mean",
+                data: statisData.map(obj => obj.mean),
+                borderWidth: 1,
+                borderColor: "rgba(54, 162, 235, 1)",
+            },
+            {
+                label: "Std devision",
+                data: statisData.map(obj => obj.stdev),
+                borderWidth: 1,
+                borderColor: "rgba(255, 99, 132, 1)",
+            },
+            {
+                label: "Variance",
+                data: statisData.map(obj => obj.variance),
+                borderWidth: 1,
+                borderColor: "rgba(255, 206, 86, 1)",
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    // type: "time",
+                    // time: {
+                    //     unit: "day"
+                    // },
+                    ticks: {
+                        display: false
+                    },
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    },
+                }]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function (tooltipItem) {
+                        return tooltipItem.yLabel;
+                    },
+                }
+            },
+            // plugins: {
+            //     zoom: {
+            //         pan: {
+            //             enabled: false,
+            //             mode: "xy",
+            //         },
+            //         zoom: {
+            //             enabled: true,
+            //             mode: "xy",
+            //         }
+            //     }
+            // },
         }
     });
 </script>
