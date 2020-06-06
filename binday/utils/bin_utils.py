@@ -1,7 +1,9 @@
+from collections import defaultdict
 from datetime import datetime
 from math import ceil
-from typing import List
+from typing import DefaultDict, List
 
+from binday.server.models.base import Base
 from binday.server.models.bin_day import CollectionFrequency, DayIndex
 from binday.utils.common_utils import day_index_to_int
 
@@ -42,3 +44,12 @@ def check_binday(
         return True if week_index == 0 else False
 
     return False
+
+
+def group_by_date_created(data: List[Base]) -> DefaultDict[datetime, List]:
+    groups = defaultdict(list)
+
+    for d in data:
+        groups[d.date_created.date()].append(d)
+
+    return groups
