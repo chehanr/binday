@@ -20,11 +20,13 @@ worker = Celery(
 def setup_periodic_tasks(sender, **kwargs):
     # TODO Add proper timing.
     sender.add_periodic_task(
-        crontab(minute="*"), add_bin_reading, name="Add bin reading task"
+        crontab(minute="30"), add_bin_reading, name="Add bin reading task"
     )
-    sender.add_periodic_task(crontab(minute="*"), turn_on_led, name="Turn on LED task")
+    sender.add_periodic_task(crontab(minute="30"), turn_on_led, name="Turn on LED task")
     sender.add_periodic_task(
-        crontab(minute="*"), send_push_notif, name="Send push notification task"
+        crontab(minute="0", hour="6,18"),
+        send_push_notif,
+        name="Send push notification task",
     )
 
 
