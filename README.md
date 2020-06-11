@@ -1,17 +1,5 @@
-# BinDay
+# BinDay: Garbage Bin Monitoring and Alert System
 
-## Running locally
+Group Project (Assignment 3) for SWE30011 IoT Programming 2020 Semester 1
 
-1. Duplicate *envs/.env.example* as *envs/.env*
-1. Update the environment variables in the *docker-compose.yml* and *.env* files
-1. Build the images and run the containers:
-
-    ```sh
-    docker-compose up --build
-    ```
-
-    The server should be available at [http://localhost:5000](http://localhost:5000)
-
-## Deployment
-
-TBA
+Refer the [Wiki](https://github.com/chehanr/binday/wiki/Getting-started) to get it running.
